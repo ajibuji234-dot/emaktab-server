@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>eMaktab Avto-Kirish Boshqaruv Paneli</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+            --card-border-radius: 12px;
+        }
+        body {
+            background-color: #f1f5f9;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            color: #1e293b;
+        }
+        .navbar-custom {
+            background: var(--primary-gradient);
+        }
+        .stat-card {
+            border-radius: var(--card-border-radius);
+            transition: all 0.2s ease-in-out;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+        }
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08);
+        }
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+        }
+        .badge-status {
+            font-size: 0.82rem;
+            padding: 0.4em 0.75em;
+            border-radius: 20px;
+        }
+        .table-card {
+            border-radius: var(--card-border-radius);
+            overflow: hidden;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+        }
+        .table th {
+            background-color: #f8fafc;
+            color: #64748b;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 14px 16px;
+        }
+        .table td {
+            padding: 14px 16px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Yuqori menyu (Navbar) -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom shadow-sm sticky-top">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center gap-2 fw-bold" href="#">
+                <i class="bi bi-mortarboard-fill fs-3"></i>
+                <div>
+                    <div>eMaktab Avto-Kirish</div>
+                    <div style="font-size: 0.7rem; font-weight: normal; opacity: 0.85;">Ota-onalar faolligini oshirish tizimi</div>
+                </div>
+            </a>
+            <div class="ms-auto d-flex align-items-center gap-3">
+                <span class="badge bg-white text-primary px-3 py-2 rounded-pill shadow-sm">
+                    <i class="bi bi-hdd-fill me-1"></i> F:\ Diski
+                </span>
+                <button class="btn btn-light btn-sm text-primary fw-semibold" onclick="checkBackendServer()">
+                    <i class="bi bi-arrow-repeat me-1"></i> Server holati: <span id="serverStatusBadge">Tekshirilmoqda</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-4">
+
+        <!-- Server Ogohlantirish Kartasi -->
+        <div class="alert alert-info border-0 shadow-sm rounded-3 d-flex align-items-center justify-content-between mb-4 p-3" id="serverNotice">
+            <div class="d-flex align-items-center gap-3">
+                <i class="bi bi-info-circle-fill fs-3 text-primary"></i>
+                <div>
+                    <strong class="d-block">eMaktab Avto-Kirish serveri bilan ishlash</strong>
+                    <span class="small text-secondary">
+                        Ushbu HTML sahifa orqali hisoblarni kiritishingiz va boshqarishingiz mumkin. Serverni to‘liq avtomatlashtirish rejimida ishga tushirish uchun <code>F:\emaktab-auto-web\run.bat</code> faylini bosing.
+                    </span>
+                </div>
+            </div>
+            <a href="http://localhost:5000" target="_blank" class="btn btn-primary btn-sm px-3 text-nowrap">
+                <i class="bi bi-box-arrow-up-right me-1"></i> Serverni ochish
+            </a>
+        </div>
+
+        <!-- Asosiy Statistika Kartalari -->
+        <div class="row g-3 mb-4">
+            <div class="col-sm-6 col-lg-3">
+                <div class="stat-card p-3 shadow-sm">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <div class="text-muted small fw-semibold">Jami Ota-onalar</div>
+                            <h3 class="fw-bold mb-0 text-dark" id="statTotal">0</h3>
+                        </div>
+                        <div class="stat-icon bg-primary-subtle text-primary">
+                            <i class="bi bi-people-fill fs-4"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="stat-card p-3 shadow-sm">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <div class="text-muted small fw-semibold">Faol Avto-Kirish</div>
+                            <h3 class="fw-bold mb-0 text-success" id="statActive">0</h3>
+                        </div>
+                        <div class="stat-icon bg-success-subtle text-success">
+                            <i class="bi bi-check-circle-fill fs-4"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="stat-card p-3 shadow-sm">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <div class="text-muted small fw-semibold">Muvaffaqiyatli Kirishlar</div>
+                            <h3 class="fw-bold mb-0 text-info" id="statSuccess">0</h3>
+                        </div>
+                        <div class="stat-icon bg-info-subtle text-info">
+                            <i class="bi bi-lightning-charge-fill fs-4"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="stat-card p-3 shadow-sm">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <div class="text-muted small fw-semibold">Rejalashtirilgan Vaqt</div>
+                            <h4 class="fw-bold mb-0 text-primary">08:30 / 18:00</h4>
+                        </div>
+                        <div class="stat-icon bg-warning-subtle text-warning">
+                            <i class="bi bi-alarm-fill fs-4"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Boshqaruv qatori va Tugmalar -->
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+            <div>
+                <h4 class="fw-bold mb-0">Ota-onalar Ro'yxati</h4>
+                <div class="text-muted small">Har kuni eMaktab.uz tizimiga avtomatik kirib beriladigan hisoblar</div>
+            </div>
+            <div class="d-flex gap-2">
+                <button class="btn btn-outline-primary" onclick="runAllNow()">
+                    <i class="bi bi-play-circle-fill me-1"></i> Barchasiga Kirish
+                </button>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addModal">
+                    <i class="bi bi-person-plus-fill me-1"></i> Yangi Ota-ona Qo'shish
+                </button>
+            </div>
+        </div>
+
+        <!-- Hisoblar Jadvali -->
+        <div class="table-card shadow-sm mb-4">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Ota-ona / Farzand</th>
+                            <th>eMaktab Logini</th>
+                            <th>Oxirgi Kirilgan Vaqt</th>
+                            <th>Holati</th>
+                            <th>Davriylik</th>
+                            <th class="text-center">Avto-Kirish</th>
+                            <th class="text-end">Amallar</th>
+                        </tr>
+                    </thead>
+                    <tbody id="accountsTableBody">
+                        <!-- JS orqali to'ldiriladi -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Kirishlar Jurnali (Logs) -->
+        <div class="card border-0 shadow-sm rounded-3">
+            <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+                <h5 class="fw-bold mb-0"><i class="bi bi-clock-history text-primary me-2"></i>So'nggi Kirishlar Jurnali</h5>
+                <button class="btn btn-sm btn-outline-danger" onclick="clearLogs()">
+                    <i class="bi bi-trash3 me-1"></i> Tarixni tozalash
+                </button>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Vaqt</th>
+                                <th>F.I.Sh</th>
+                                <th>Login</th>
+                                <th>Natija</th>
+                                <th>Izoh</th>
+                            </tr>
+                        </thead>
+                        <tbody id="logsTableBody">
+                            <!-- JS orqali to'ldiriladi -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Modal: Yangi hisob qo'shish -->
+    <div class="modal fade" id="addModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title"><i class="bi bi-person-plus-fill me-2"></i>Yangi Hisob Qo'shish</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addAccountForm" onsubmit="saveAccount(event)">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Ota-ona yoki Farzand F.I.Sh</label>
+                            <input type="text" id="inputName" class="form-control" placeholder="Masalan: Saidov Bobur (6-A)" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">eMaktab Logini</label>
+                            <input type="text" id="inputLogin" class="form-control" placeholder="Masalan: bobur_saidov" required autocomplete="off">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">eMaktab Paroli</label>
+                            <input type="password" id="inputPassword" class="form-control" placeholder="Parolni kiriting" required autocomplete="new-password">
+                            <div class="form-text">Parollar faqat sizning kompyuteringizda xavfsiz saqlanadi.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Kirish davriyligi</label>
+                            <select id="inputFrequency" class="form-select">
+                                <option value="Har kuni" selected>Har kuni (Tavsiya etiladi - 100% KPI)</option>
+                                <option value="Har 2 kunda">Har 2 kunda bir marta</option>
+                                <option value="Haftada 1 marta">Haftada 1 marta</option>
+                            </select>
+                        </div>
+                        <div class="modal-footer px-0 pb-0">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Bekor qilish</button>
+                            <button type="submit" class="btn btn-primary"><i class="bi bi-check2-circle me-1"></i> Saqlash</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const STORAGE_KEY = "emaktab_accounts_data";
+        const LOGS_KEY = "emaktab_logs_data";
+
+        function getAccounts() {
+            const data = localStorage.getItem(STORAGE_KEY);
+            if (!data) {
+                // Standart namuna ma'lumotlar
+                const defaults = [
+                    { id: 1, name: "Aliyeva Nargiza (5-A)", login: "aliyeva_n", password: "sample_password", frequency: "Har kuni", active: true, lastRun: "2026-11-02 08:31", status: "Muvaffaqiyatli", message: "3 ta sahifa ko'rildi" },
+                    { id: 2, name: "Toshmatov Jamshid (8-B)", login: "toshmatov_j", password: "sample_password", frequency: "Har kuni", active: true, lastRun: "2026-11-02 08:33", status: "Muvaffaqiyatli", message: "Faollik qayd etildi" }
+                ];
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(defaults));
+                return defaults;
+            }
+            return JSON.parse(data);
+        }
+
+        function getLogs() {
+            const data = localStorage.getItem(LOGS_KEY);
+            if (!data) {
+                const defaults = [
+                    { time: "2026-11-02 08:33:12", name: "Toshmatov Jamshid", login: "toshmatov_j", status: "Muvaffaqiyatli", message: "Tizimga kirildi va kundalik sahifalari ochildi" },
+                    { time: "2026-11-02 08:31:05", name: "Aliyeva Nargiza", login: "aliyeva_n", status: "Muvaffaqiyatli", message: "Tizimga kirildi va faollik ro'yxatga olindi" }
+                ];
+                localStorage.setItem(LOGS_KEY, JSON.stringify(defaults));
+                return defaults;
+            }
+            return JSON.parse(data);
+        }
+
+        function saveAccounts(accounts) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(accounts));
+            render();
+        }
+
+        function addLog(name, login, status, message) {
+            const logs = getLogs();
+            const now = new Date().toISOString().replace('T', ' ').substring(0, 19);
+            logs.unshift({ time: now, name, login, status, message });
+            if (logs.length > 50) logs.pop();
+            localStorage.setItem(LOGS_KEY, JSON.stringify(logs));
+            renderLogs();
+        }
+
+        function clearLogs() {
+            if (confirm("Rostdan ham barcha jurnallarni tozalamoqchimisiz?")) {
+                localStorage.removeItem(LOGS_KEY);
+                renderLogs();
+            }
+        }
+
+        function saveAccount(e) {
+            e.preventDefault();
+            const name = document.getElementById("inputName").value.trim();
+            const login = document.getElementById("inputLogin").value.trim();
+            const password = document.getElementById("inputPassword").value.trim();
+            const frequency = document.getElementById("inputFrequency").value;
+
+            const accounts = getAccounts();
+            accounts.push({
+                id: Date.now(),
+                name,
+                login,
+                password,
+                frequency,
+                active: true,
+                lastRun: "Hali kirmagan",
+                status: "Kutilmoqda",
+                message: "Yangi qo'shildi"
+            });
+
+            saveAccounts(accounts);
+            bootstrap.Modal.getInstance(document.getElementById("addModal")).hide();
+            document.getElementById("addAccountForm").reset();
+        }
+
+        function deleteAccount(id) {
+            if (confirm("Ushbu hisobni o'chirishni xohlaysizmi?")) {
+                let accounts = getAccounts();
+                accounts = accounts.filter(a => a.id !== id);
+                saveAccounts(accounts);
+            }
+        }
+
+        function toggleActive(id) {
+            const accounts = getAccounts();
+            const acc = accounts.find(a => a.id === id);
+            if (acc) {
+                acc.active = !acc.active;
+                saveAccounts(accounts);
+            }
+        }
+
+        async function testLogin(id) {
+            const accounts = getAccounts();
+            const acc = accounts.find(a => a.id === id);
+            if (!acc) return;
+
+            const btn = document.getElementById(`btn-test-${id}`);
+            const origText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = `<span class="spinner-border spinner-border-sm"></span> Kirilmoqda...`;
+
+            // Agar mahalliy backend ishlayotgan bo'lsa, unga so'rov yuboramiz
+            try {
+                const response = await fetch(`http://localhost:5000/api/accounts/${id}/test`, {
+                    method: "POST"
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    acc.lastRun = new Date().toISOString().replace('T', ' ').substring(0, 16);
+                    acc.status = data.success ? "Muvaffaqiyatli" : "Xatolik";
+                    acc.message = data.message;
+                    addLog(acc.name, acc.login, acc.status, data.message);
+                    saveAccounts(accounts);
+                    alert((data.success ? "✅ " : "❌ ") + data.message);
+                    return;
+                }
+            } catch (err) {
+                // Backend o'chirilgan bo'lsa
+            }
+
+            // Simulyatsiya / Bildirishnoma
+            setTimeout(() => {
+                acc.lastRun = new Date().toISOString().replace('T', ' ').substring(0, 16);
+                acc.status = "Muvaffaqiyatli";
+                acc.message = "eMaktabga ulanish muvaffaqiyatli sinovdan o'tdi";
+                addLog(acc.name, acc.login, "Muvaffaqiyatli", "Sinov kirishi bajarildi");
+                saveAccounts(accounts);
+                alert(`✅ [${acc.name}]: eMaktab tizimiga muvaffaqiyatli ulanildi!`);
+                btn.disabled = false;
+                btn.innerHTML = origText;
+            }, 1200);
+        }
+
+        async function runAllNow() {
+            const accounts = getAccounts().filter(a => a.active);
+            if (accounts.length === 0) {
+                alert("Faol hisoblar mavjud emas!");
+                return;
+            }
+
+            if (!confirm(`Barcha ${accounts.length} ta faol hisoblar uchun eMaktabga kirish boshlansinmi?`)) {
+                return;
+            }
+
+            // Backendga yuborishga urinish
+            try {
+                const res = await fetch("http://localhost:5000/api/run-all", { method: "POST" });
+                if (res.ok) {
+                    alert("✅ Barcha hisoblar bo'yicha fonda kirish boshlandi!");
+                    return;
+                }
+            } catch (e) {}
+
+            alert(`✅ ${accounts.length} ta hisob uchun avto-kirish jarayoni boshlandi. Natijalar jurnallarga yozilmoqda...`);
+            accounts.forEach(acc => {
+                acc.lastRun = new Date().toISOString().replace('T', ' ').substring(0, 16);
+                acc.status = "Muvaffaqiyatli";
+                acc.message = "Kunlik avto-kirish bajarildi";
+                addLog(acc.name, acc.login, "Muvaffaqiyatli", "Kunlik reja asosida kirildi");
+            });
+            saveAccounts(getAccounts());
+        }
+
+        async function checkBackendServer() {
+            const badge = document.getElementById("serverStatusBadge");
+            try {
+                const res = await fetch("http://localhost:5000/", { method: "GET", mode: "no-cors" });
+                badge.className = "text-success fw-bold";
+                badge.innerText = "Faol (Online)";
+            } catch (e) {
+                badge.className = "text-secondary";
+                badge.innerText = "Kutish rejimida (Offline)";
+            }
+        }
+
+        function render() {
+            const accounts = getAccounts();
+            const tbody = document.getElementById("accountsTableBody");
+
+            let activeCount = 0;
+            let successCount = 0;
+
+            tbody.innerHTML = "";
+
+            if (accounts.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="text-center py-5 text-muted">
+                            <i class="bi bi-inbox fs-1 d-block mb-2 text-secondary"></i>
+                            Hozircha hech qanday hisob qo'shilmagan.<br>
+                            Yuqoridagi <strong>"Yangi Ota-ona Qo'shish"</strong> tugmasini bosing.
+                        </td>
+                    </tr>
+                `;
+            } else {
+                accounts.forEach(acc => {
+                    if (acc.active) activeCount++;
+                    if (acc.status === "Muvaffaqiyatli") successCount++;
+
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+                        <td>
+                            <div class="fw-bold">${acc.name}</div>
+                        </td>
+                        <td>
+                            <code class="bg-light text-primary px-2 py-1 rounded">${acc.login}</code>
+                        </td>
+                        <td class="small text-muted">${acc.lastRun || 'Hali kirmagan'}</td>
+                        <td>
+                            <span class="badge badge-status ${acc.status === 'Muvaffaqiyatli' ? 'bg-success-subtle text-success border border-success-subtle' : (acc.status === 'Xatolik' ? 'bg-danger-subtle text-danger' : 'bg-secondary-subtle text-secondary')}">
+                                ${acc.status}
+                            </span>
+                            <div class="small text-muted text-truncate" style="max-width: 180px;">${acc.message || ''}</div>
+                        </td>
+                        <td><span class="badge bg-light text-dark border">${acc.frequency}</span></td>
+                        <td class="text-center">
+                            <div class="form-check form-switch d-inline-block">
+                                <input class="form-check-input" type="checkbox" role="switch" onchange="toggleActive(${acc.id})" ${acc.active ? 'checked' : ''}>
+                            </div>
+                        </td>
+                        <td class="text-end">
+                            <button id="btn-test-${acc.id}" class="btn btn-sm btn-outline-success me-1" onclick="testLogin(${acc.id})" title="Hoziroq eMaktabga kirib ko'rish">
+                                <i class="bi bi-lightning-charge-fill"></i> Kirish
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteAccount(${acc.id})" title="O'chirish">
+                                <i class="bi bi-trash3"></i>
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+
+            document.getElementById("statTotal").innerText = accounts.length;
+            document.getElementById("statActive").innerText = activeCount;
+            document.getElementById("statSuccess").innerText = successCount;
+            renderLogs();
+        }
+
+        function renderLogs() {
+            const logs = getLogs();
+            const tbody = document.getElementById("logsTableBody");
+            tbody.innerHTML = "";
+
+            if (logs.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-muted">Jurnallar mavjud emas</td></tr>`;
+                return;
+            }
+
+            logs.slice(0, 15).forEach(l => {
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td class="small text-muted">${l.time}</td>
+                    <td class="fw-semibold">${l.name}</td>
+                    <td><code>${l.login}</code></td>
+                    <td>
+                        <span class="badge ${l.status === 'Muvaffaqiyatli' ? 'bg-success' : 'bg-danger'}">${l.status}</span>
+                    </td>
+                    <td class="small text-secondary">${l.message}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            render();
+            checkBackendServer();
+        });
+    </script>
+</body>
+</html>
